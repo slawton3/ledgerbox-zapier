@@ -5,14 +5,14 @@ const stream = require('stream');
 const authentication = {
   type: 'custom',
   test: {
-    url: 'https://ledgerbox.io/api/protected/job',
+    url: 'https://ledgerbox.io/api/protected/auth',
   },
   fields: [
     {
       key: 'apiKey',
       type: 'string',
       required: true,
-      helpText: 'Your LedgerBox API Key. You can find this in your LedgerBox account settings at https://ledgerbox.io/account/api-keys.'
+      helpText: 'Your LedgerBox API Key. You can find this in your LedgerBox account settings at https://ledgerbox.io/dashboard/settings'
     }
   ],
   connectionLabel: '{{bundle.authData.apiKey}}'
