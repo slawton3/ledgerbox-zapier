@@ -65,23 +65,39 @@ const App = {
       noun: 'File',
       display: {
         label: 'Upload File',
-        description: 'Uploads one or more files to LedgerBox.'
+        description: 'Uploads a file to LedgerBox and processes it with the specified model.'
       },
       operation: {
         inputFields: [
-          {key: 'file', required: true, label: 'File', type: 'file'},
-          {key: 'model', required: true, label: 'Model', type: 'string', helpText: 'The model to use for the upload. This is usually the name of the company or organization that will be processing the files.'}
+          {
+            key: 'file',
+            label: 'File',
+            type: 'file',
+            required: true,
+            helpText: 'The file you want to upload and process.'
+          },
+          {
+            key: 'model',
+            label: 'Processing Model',
+            type: 'string',
+            required: true,
+            helpText: 'The model to use for processing the file (e.g., invoice, bankstatement).'
+          }
         ],
         perform: performUpload,
         sample: {
-          id: 1,
-          filename: 'example.pdf',
-          url: 'https://ledgerbox.io/files/example.pdf',
-          model: 'invoice'
-        }
+          id: '943cc0dc-3877-350b-6a80-7955eb6828aa',
+          jobStatus: 'processing',
+          documentIds: [2769]
+        },
+        outputFields: [
+          {key: 'id', label: 'Job ID'},
+          {key: 'jobStatus', label: 'Job Status'},
+          {key: 'documentIds', label: 'Document IDs'}
+        ]
       }
     }
-  },
+  }
 };
 
 module.exports = App;
