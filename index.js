@@ -1,6 +1,4 @@
-// index.js
 const FormData = require('form-data');
-const stream = require('stream');
 
 const authentication = {
   type: 'custom',
@@ -21,19 +19,23 @@ const authentication = {
 const performUpload = async (z, bundle) => {
   const formData = new FormData();
   
-  if (bundle.inputData.file) {
-    const fileStream = new stream.Readable();
-    fileStream.push(bundle.inputData.file.content);
-    fileStream.push(null);
+  // Fetch the file content from the Zapier-provided URL
+  const fileResponse = await z.request({
+    url: bundle.inputData.file,
+    raw: true,
+  });
 
-    formData.append('files', fileStream, {
-      filename: bundle.inputData.file.filename || 'file',
-      contentType: bundle.inputData.file.contentType,
-    });
-  }
+  // Get the file content as a buffer
+  const fileContent = await fileResponse.buffer();
+
+  // Append the file to the form data
+  formData.append('files', fileContent, {
+    filename: bundle.inputData.filename,
+    contentType: bundle.inputData.contentType || 'application/octet-stream'
+  });
 
   const response = await z.request({
-    url: `https://ledgerbox.io/api/protected/upload?model=${bundle.inputData.model}`,
+    url: `https://ledgerbox.io/api/protected/upload`,
     method: 'POST',
     body: formData,
     headers: {
@@ -41,9 +43,17 @@ const performUpload = async (z, bundle) => {
       'Accept': 'application/json',
       'X-API-Key': bundle.authData.apiKey
     },
+    params: {
+      model: bundle.inputData.model
+    }
   });
 
-  return response.data;
+  // If the response is not ok, throw an error
+  if (response.status !== 200) {
+    throw new Error(`Unexpected status code ${response.status}: ${response.content}`);
+  }
+
+  return response.json;
 };
 
 const App = {
@@ -74,26 +84,45 @@ const App = {
             label: 'File',
             type: 'file',
             required: true,
-            helpText: 'The file you want to upload and process.'
+            helpText: 'The file you want to upload and process. Must be a PDF, JPEG, or PNG file under 10MB.'
+          },
+          {
+            key: 'filename',
+            label: 'Filename',
+            type: 'string',
+            required: true,
+            helpText: 'The name of the file, including its extension (e.g., invoice.pdf).'
+          },
+          {
+            key: 'contentType',
+            label: 'Content Type',
+            type: 'string',
+            required: false,
+            helpText: 'The MIME type of the file (e.g., application/pdf). If not provided, application/octet-stream will be used.'
           },
           {
             key: 'model',
             label: 'Processing Model',
             type: 'string',
             required: true,
-            helpText: 'The model to use for processing the file (e.g., invoice, bankstatement).'
+            choices: ['invoice', 'receipt', 'bankstatement'],
+            helpText: 'The model to use for processing the file.'
           }
         ],
         perform: performUpload,
         sample: {
-          id: '943cc0dc-3877-350b-6a80-7955eb6828aa',
-          jobStatus: 'processing',
-          documentIds: [2769]
+          message: "Files uploaded successfully",
+          results: {
+            jobId: "job-12345",
+            jobStatus: "Processing",
+            documentIds: ["doc-67890"]
+          }
         },
         outputFields: [
-          {key: 'id', label: 'Job ID'},
-          {key: 'jobStatus', label: 'Job Status'},
-          {key: 'documentIds', label: 'Document IDs'}
+          {key: 'message', label: 'Message', type: 'string'},
+          {key: 'results__jobId', label: 'Job ID', type: 'string'},
+          {key: 'results__jobStatus', label: 'Job Status', type: 'string'},
+          {key: 'results__documentIds', label: 'Document IDs', type: 'string'}
         ]
       }
     }

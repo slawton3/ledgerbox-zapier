@@ -22,6 +22,29 @@ describe('My App', () => {
       },
     };
 
+    it('should upload a base64-encoded file', async () => {
+      const filePath = path.join(__dirname, 'test.pdf');
+      const fileContent = fs.readFileSync(filePath, {encoding: 'base64'});
+    
+      const bundle = {
+        authData: {
+          apiKey: process.env.API_KEY,
+        },
+        inputData: {
+          fileContent: fileContent,
+          filename: 'test.pdf',
+          contentType: 'application/pdf',
+          model: 'invoice',
+        },
+      };
+    
+      const results = await appTester(App.creates.upload_file.operation.perform, bundle);
+      expect(results.id).toBeDefined();
+      expect(results.jobStatus).toBe('processing');
+      expect(results.documentIds).toBeDefined();
+      expect(Array.isArray(results.documentIds)).toBe(true);
+    });
+
     const results = await appTester(App.creates.upload_file.operation.perform, bundle);
     console.log(results);
 
