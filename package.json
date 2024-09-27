@@ -1,17 +1,24 @@
 {
-  "name": ".",
+  "name": "ledgerbox-zapier",
   "version": "1.0.0",
-  "description": "",
+  "description": "Extract data from financial documents with AI",
   "main": "index.js",
   "scripts": {
-    "test": "jest --testTimeout 10000"
+    "test": "pnpm run build && jest --testTimeout 10000 --rootDir ./lib/test",
+    "build": "pnpm run clean && tsc",
+    "clean": "rimraf ./lib ./build",
+    "watch": "pnpm run clean && tsc --watch",
+    "_zapier-build": "pnpm run build"
   },
   "dependencies": {
     "form-data": "^4.0.0",
-    "zapier-platform-core": "15.16.0"
+    "zapier-platform-core": "15.16.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "jest": "^29.6.0"
+    "jest": "^29.6.0",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.2"
   },
   "private": true
 }
